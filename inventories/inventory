@@ -1,0 +1,20 @@
+[all:vars]
+ansible_user=root
+localregistry=quay.io/grakover/ocpdbtest:latest
+testproject=podtest
+
+[nodes]
+ocpapp1.ocp.rhevdemo.com ansible_ssh_host=10.35.76.221 openshift_node_group_name=compute
+ocpapp2.ocp.rhevdemo.com ansible_ssh_host=10.35.76.223 openshift_node_group_name=compute
+ocpapp3.ocp.rhevdemo.com ansible_ssh_host=10.35.76.237 openshift_node_group_name=compute
+ocpinfra1.ocp.rhevdemo.com ansible_ssh_host=10.35.76.233 openshift_node_group_name=infra
+ocpinfra2.ocp.rhevdemo.com ansible_ssh_host=10.35.76.234 openshift_node_group_name=infra
+ocpinfra3.ocp.rhevdemo.com ansible_ssh_host=10.35.76.236 openshift_node_group_name=infra
+
+[nodes:children]
+masters
+
+[masters]
+ocpmstr1.ocp.rhevdemo.com ansible_ssh_host=10.35.76.228 openshift_node_group_name=master
+ocpmstr2.ocp.rhevdemo.com ansible_ssh_host=10.35.76.229 openshift_node_group_name=master
+ocpmstr3.ocp.rhevdemo.com ansible_ssh_host=10.35.76.230 openshift_node_group_name=master

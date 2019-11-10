@@ -1,0 +1,11 @@
+---
+# defaults file for create_project
+testproject: podtest
+storageclass: glusterfs-storage
+ocpappsdomain: apps.openshift.ocp.rhevdemo.com
+S3_HOST: "10.35.76.232:8000"
+ACCESS_KEY: "20GPFRPMZ45QUPPJIFT4"
+SECRET_KEY: "vnlyh2UsxOlBJqCOL2bwNXvgaK1aPcXUXEG87x5D"
+SSL: "FALSE"
+PSQL_HOST: "10.35.76.251"
+PSQL_USER: "postgres"

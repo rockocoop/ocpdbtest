@@ -1,0 +1,33 @@
+---
+
+
+- name: scale up | set replicas to 1
+  shell: "oc scale dc ocpdbtest --replicas=1 -n {{testproject}}"
+  delegate_to:  "{{groups['masters'] | first}}"
+
+- name: check | pods are up
+  shell: "oc get pods -n {{testproject}} |grep -i ocpdbtest|grep -i Running"
+  register: oc_get_pods
+  until: "'Running' in oc_get_pods.stdout and 'deploy' not in oc_get_pods.stdout"
+  retries: 60
+  delay: 2
+  delegate_to: "{{groups['masters'] | first}}"
+
+- name: check | pod is running on correct node
+  shell: "oc get pods -o wide -n {{testproject}} |grep -i ocpdbtest|grep -i Running | grep -i {{inventory_hostname}}"
+  register: cnode
+  delegate_to: "{{groups['masters'] | first}}"
+
+- name: check | databases responded 
+  uri:
+    url: https://ocpdbtest-{{testproject}}.{{ocpappsdomain}}/reponse.html
+    return_content: yes
+    validate_certs: false
+  register: response
+  failed_when: "'FAIL' in response.content or 'ERROR' in response.content"
+  delegate_to: localhost
+
+- name: scale down | set replicas to 0
+  shell: "oc scale dc ocpdbtest --replicas=0 -n {{testproject}}"
+  delegate_to:  "{{groups['masters'] | first}}"
+

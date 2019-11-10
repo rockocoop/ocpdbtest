@@ -1,0 +1,84 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+
+  pre_tasks:
+
+
+  - name: copy kubeconfig
+    fetch:
+      src: /root/.kube/config
+      dest: ../kubeconfig
+      flat: yes
+    delegate_to: "{{groups['masters'] | first}}"
+
+  - name: prepare admin user
+    shell: oc adm policy add-scc-to-user privileged system:serviceaccount:default:default
+    delegate_to: "{{groups['masters'] | first}}"
+
+  - name: prepare admin user
+    shell: oc adm policy add-scc-to-group anyuid system:authenticated
+    delegate_to: "{{groups['masters'] | first}}"
+
+
+- hosts: localhost
+  gather_facts: false
+
+  roles:
+  - deploy_test
+
+
+- hosts: localhost
+  gather_facts: false
+
+
+  tasks:
+
+
+  - name: scale down in case of rerun
+    shell: "oc scale dc ocpdbtest --replicas=0"
+    delegate_to:  "{{groups['masters'] | first}}"
+
+  - name:  unlabel all nodes
+    shell: "oc label node {{hostvars[item].inventory_hostname}} nodeTest-"
+    register: unlabel
+    changed_when: "'not labeled' not in unlabel.stdout"
+    delegate_to: "{{groups['masters'] | first}}"
+    with_items:
+    - "{{groups['nodes']}}"
+
+
+- hosts: nodes
+  gather_facts: false
+  serial: 1
+
+  tasks:
+
+  - name: label node
+    shell: "oc label node {{inventory_hostname}} nodeTest=true --overwrite=true"
+    delegate_to:  "{{groups['masters'] | first}}"
+    when: "'infra' not in openshift_node_group_name and 'master' not in openshift_node_group_name"
+ 
+  - name: run test
+    include_role:
+      name: run_test
+    when: "'infra' not in openshift_node_group_name and 'master' not in openshift_node_group_name"
+
+  - name: remove label from node
+    shell: "oc label node {{inventory_hostname}} nodeTest-"
+    delegate_to:  "{{groups['masters'] | first}}" 
+    when: "'infra' not in openshift_node_group_name and 'master' not in openshift_node_group_name"
+
+
+- hosts: localhost
+  gather_facts: false
+
+
+  tasks:
+
+
+  - name: delete test project
+    shell: "oc delete project {{testproject}}"
+    delegate_to:  "{{groups['masters'] | first}}"
+  
