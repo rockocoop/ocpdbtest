@@ -37,7 +37,7 @@
 
 
   - name: scale down in case of rerun
-    shell: "oc scale dc ocpdbtest --replicas=0"
+    shell: "oc scale dc ocpdbtest --replicas=0 -n {{testproject}}"
     delegate_to:  "{{groups['masters'] | first}}"
 
   - name:  unlabel all nodes
