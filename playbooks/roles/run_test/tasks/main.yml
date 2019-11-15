@@ -13,12 +13,12 @@
   delay: 2
   delegate_to: "{{groups['masters'] | first}}"
 
-- name: check | pod is running on correct node
+- name: check | pod is running and on correct node
   shell: "oc get pods -o wide -n {{testproject}} |grep -i ocpdbtest|grep -i Running | grep -i {{inventory_hostname}}"
   register: cnode
   delegate_to: "{{groups['masters'] | first}}"
 
-- name: check | databases responded 
+- name: check | databases  and s3 respondes
   uri:
     url: https://ocpdbtest-{{testproject}}.{{ocpappsdomain}}/reponse.html
     return_content: yes
